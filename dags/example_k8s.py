@@ -11,10 +11,10 @@ with DAG(
         namespace='default',
         image="ubuntu:18.04",
         cmds=["bash", "-cx"],
-        arguments=["echo", "hello world", "&&", "sleep", "100"],
+        arguments=["echo", "hello world"],
         labels={"foo": "bar"},
         name="example-pod",
         task_id="run-example-pod",
         get_logs=True,
-        is_delete_operator_pod=True,
+        is_delete_operator_pod=False,
     )
