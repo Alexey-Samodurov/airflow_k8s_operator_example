@@ -1,0 +1,6 @@
+executor: "KubernetesExecutor"
+
+images:
+  airflow:
+    repository: samodurov/airflow
+    tag: latest
