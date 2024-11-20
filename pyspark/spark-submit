@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+if [ -z "${SPARK_HOME}" ]; then
+  source "$(dirname "$0")"/find-spark-home
+fi
+
+# disable randomized hash for string in Python 3.3+
+export PYTHONHASHSEED=0
+
+
+
+# check deployment mode.
+if echo "$@" | grep -q "\-\-deploy-mode cluster";
+then
+    echo "cluster mode..";
+    # temp log file for spark job.
+    export TMP_LOG="/tmp/spark-job-log-$(date '+%Y-%m-%d-%H-%M-%S').log";
+    exec "${SPARK_HOME}"/bin/spark-class org.apache.spark.deploy.SparkSubmit "$@" |& tee ${TMP_LOG};
+    # when exit code 1 is contained in spark log, then return exit 1.
+    if cat ${TMP_LOG} | grep -q "exit code: 1";
+    then
+        echo "exit code: 1";
+        rm -rf ${TMP_LOG};
+        exit 1;
+    else
+        echo "job succeeded.";
+        rm -rf ${TMP_LOG};
+        exit 0;
+    fi
+elif echo "$@" | grep -q "\-\-conf spark.submit.deployMode=cluster";
+then
+    echo "cluster mode..";
+    # temp log file for spark job.
+    export TMP_LOG="/tmp/spark-job-log-$(date '+%Y-%m-%d-%H-%M-%S').log";
+    exec "${SPARK_HOME}"/bin/spark-class org.apache.spark.deploy.SparkSubmit "$@" |& tee ${TMP_LOG};
+    # when exit code 1 is contained in spark log, then return exit 1.
+    if cat ${TMP_LOG} | grep -q "exit code: 1";
+    then
+        echo "exit code: 1";
+        rm -rf ${TMP_LOG};
+        exit 1;
+    else
+        echo "job succeeded.";
+        rm -rf ${TMP_LOG};
+        exit 0;
+    fi
+else
+    echo "client mode..";
+    exec "${SPARK_HOME}"/bin/spark-class org.apache.spark.deploy.SparkSubmit "$@"
+fi
