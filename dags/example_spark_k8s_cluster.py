@@ -15,7 +15,7 @@ with DAG(
             "--master", "k8s://https://kubernetes.default.svc:443",
             "--name", "pyspark-app",
             "--deploy-mode", "cluster",
-            "--conf", "spark.executor.memory=250m",
+            "--conf", "spark.executor.memory=500m",
             "--conf", "spark.driver.memory=500m",
             "--conf", "spark.executor.instances=2",
             "--conf", "spark.kubernetes.executor.request.cores=0.1",
